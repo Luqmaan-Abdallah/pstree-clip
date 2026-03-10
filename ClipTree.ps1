@@ -38,3 +38,6 @@ function Clip-Tree {
 }
 
 Clip-Tree
+
+Set-Alias -Name cliptree -Value Clip-Tree
+Set-Alias -Name ct -Value Clip-Tree
