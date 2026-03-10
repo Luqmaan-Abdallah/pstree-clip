@@ -1,5 +1,7 @@
 ## ClipTree
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 **ClipTree** is a PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. It is built for developers who need to provide instant project context to LLMs or generate quick file-structure documentation without manual formatting.
 
 ---
