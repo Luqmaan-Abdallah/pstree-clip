@@ -3,11 +3,11 @@ $TargetScriptPath = Join-Path $TargetDir "ClipTree.ps1"
 $CurrentScriptPath = Join-Path $PSScriptRoot "ClipTree.ps1"
 
 if (!(Test-Path $CurrentScriptPath)) {
-    Write-Host "Error: Could not find ClipTree.ps1 in this folder!" -ForegroundColor Red
+    Write-Host "Error: ClipTree.ps1 not found in the current directory." -ForegroundColor Red
     return
 }
 
-Write-Host "Installing ClipTree to standard location: $TargetDir..." -ForegroundColor Cyan
+Write-Host "Setting up ClipTree at: $TargetDir" -ForegroundColor Cyan
 
 if (!(Test-Path $TargetDir)) {
     New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
@@ -25,14 +25,15 @@ if (!(Test-Path $PROFILE)) {
     New-Item -Path $PROFILE -ItemType File -Force | Out-Null
 }
 
-$content = Get-Content $PROFILE
+$content = Get-Content $PROFILE -ErrorAction SilentlyContinue
 $newContent = $content | Where-Object { $_ -notlike "*pstree-clip.ps1*" -and $_ -notlike "*ClipTree.ps1*" }
-$newContent | Set-Content $PROFILE
 
-Add-Content -Path $PROFILE -Value "`n$LoaderLine"
+($newContent + $LoaderLine) | Set-Content $PROFILE -Force
 
 Write-Host "------------------------------------------------" -ForegroundColor Cyan
-Write-Host "Success! Clip-Tree is now installed and linked." -ForegroundColor Green
-Write-Host "Permanent Path: $TargetScriptPath" -ForegroundColor Gray
-Write-Host "Please restart PowerShell to activate the 'ct' and 'cliptree' commands." -ForegroundColor Yellow
+Write-Host "Setup finished. Clip-Tree is now linked." -ForegroundColor Green
+Write-Host "Primary Command:  Clip-Tree" -ForegroundColor White
+Write-Host "Quick Aliases:    ct, cliptree" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Note: Please restart your terminal to activate the changes." -ForegroundColor Yellow
 Write-Host "------------------------------------------------" -ForegroundColor Cyan
