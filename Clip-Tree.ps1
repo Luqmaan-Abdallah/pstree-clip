@@ -4,6 +4,7 @@ $Script:GetTreeDefaultQuiet = $false
 
 function Update-TreeConfig {
     [CmdletBinding(SupportsShouldProcess)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     param(
         [Parameter(Position = 0)]
         [Alias('s')]
@@ -26,6 +27,8 @@ function Update-TreeConfig {
 
 function Get-Tree {
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
         [Parameter(Position = 0, Mandatory = $false, ValueFromPipeline = $true)]
         [string]$Path = ".",
@@ -38,11 +41,11 @@ function Get-Tree {
         })]
         [string]$Style = $Script:GetTreeDefaultStyle,
 
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [Alias('q')]
         [switch]$Quiet = $Script:GetTreeDefaultQuiet,
 
-        [Parameter(Mandatory=$false, Position = 2)]
+        [Parameter(Mandatory = $false, Position = 2)]
         [Alias('d')]
         [int]$Depth = 0
     )
@@ -67,8 +70,8 @@ function Get-Tree {
         $IgnoreList = @(".treeignore", ".git")
 
         if (Test-Path $IgnoreFile) {
-            $IgnoreList += Get-Content $IgnoreFile | 
-                Where-Object { $_ -match '\S' } | 
+            $IgnoreList += Get-Content $IgnoreFile |
+                Where-Object { $_ -match '\S' } |
                 ForEach-Object { $_.Trim().TrimEnd('\').TrimEnd('/') }
         }
 
@@ -84,17 +87,11 @@ function Get-Tree {
         $allFiles = Get-ChildItem @gciParams | Where-Object {
             $item = $_
             $shouldIgnore = $false
-            
             $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
             $pathParts = $RelativePath -split '\\'
 
             foreach ($pattern in $IgnoreList) {
-                if ($item.Name -like $pattern) {
-                    $shouldIgnore = $true
-                    break
-                }
-
-                if ($pathParts -contains $pattern) {
+                if ($item.Name -like $pattern -or ($pathParts -contains $pattern)) {
                     $shouldIgnore = $true
                     break
                 }
@@ -129,7 +126,9 @@ function Get-Tree {
         $E = [char]27
 
         if ([string]::IsNullOrWhiteSpace($finalTree)) {
-            if (-not $Quiet) { Write-Host "$E[33mNo files found in: $RootPath$E[0m" }
+            if (-not $Quiet) {
+                Write-Host "$E[33mNo files found in: $RootPath$E[0m"
+            }
             return
         }
 
