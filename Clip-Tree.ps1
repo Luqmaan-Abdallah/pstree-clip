@@ -4,7 +4,6 @@ $Script:GetTreeDefaultQuiet = $false
 
 function Update-TreeConfig {
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     param(
         [Parameter(Position = 0)]
         [Alias('s')]
@@ -19,9 +18,6 @@ function Update-TreeConfig {
         [bool]$Quiet
     )
 
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Only modifies internal module variables.")]
-    $null = $null
-
     if ($PSCmdlet.ShouldProcess("Module Configuration", "Update Defaults")) {
         if ($PSBoundParameters.ContainsKey('Style')) { $Script:GetTreeDefaultStyle = $Style }
         if ($PSBoundParameters.ContainsKey('Quiet')) { $Script:GetTreeDefaultQuiet = $Quiet }
@@ -30,8 +26,6 @@ function Update-TreeConfig {
 
 function Get-Tree {
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
         [Parameter(Position = 0, Mandatory = $false, ValueFromPipeline = $true)]
         [string]$Path = ".",
@@ -73,7 +67,9 @@ function Get-Tree {
         $IgnoreList = @(".treeignore", ".git")
 
         if (Test-Path $IgnoreFile) {
-            $IgnoreList += Get-Content $IgnoreFile | Where-Object { $_ -match '\S' } | ForEach-Object { $_.Trim() }
+            $IgnoreList += Get-Content $IgnoreFile | 
+                Where-Object { $_ -match '\S' } | 
+                ForEach-Object { $_.Trim().TrimEnd('\').TrimEnd('/') }
         }
 
         $report = [System.Text.StringBuilder]::new()
@@ -86,10 +82,18 @@ function Get-Tree {
         if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
 
         $allFiles = Get-ChildItem @gciParams | Where-Object {
-            $itemPath = $_.FullName
-            $pathParts = $itemPath -split '\\'
+            $item = $_
             $shouldIgnore = $false
+            
+            $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
+            $pathParts = $RelativePath -split '\\'
+
             foreach ($pattern in $IgnoreList) {
+                if ($item.Name -like $pattern) {
+                    $shouldIgnore = $true
+                    break
+                }
+
                 if ($pathParts -contains $pattern) {
                     $shouldIgnore = $true
                     break
