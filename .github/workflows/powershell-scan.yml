@@ -18,8 +18,14 @@ jobs:
         run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
 
       - name: Run PSScriptAnalyzer
+        shell: pwsh
         run: |
-          $psFiles = Get-ChildItem -Path . -Filter *.ps1 -Recurse
-          foreach ($file in $psFiles) {
-            Invoke-ScriptAnalyzer -Path $file.FullName -Recurse -Severity Error,Warning
+          $results = Invoke-ScriptAnalyzer -Path ./ -Recurse -Severity Error, Warning
+          
+          if ($results) {
+              $results | Format-Table -AutoSize
+              Write-Error "PSScriptAnalyzer found $($results.Count) issues (Errors/Warnings). Failing build."
+              exit 1
+          } else {
+              Write-Host "No issues found!"
           }
