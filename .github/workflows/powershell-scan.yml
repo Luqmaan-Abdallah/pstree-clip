@@ -10,11 +10,17 @@ jobs:
   ps-security:
     runs-on: windows-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install PSScriptAnalyzer
+        shell: pwsh
         run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
 
       - name: Run PSScriptAnalyzer
@@ -24,8 +30,38 @@ jobs:
           
           if ($results) {
               $results | Format-Table -AutoSize
-              Write-Error "PSScriptAnalyzer found $($results.Count) issues (Errors/Warnings). Failing build."
+              Write-Error "PSScriptAnalyzer found $($results.Count) issues. Failing build."
               exit 1
           } else {
               Write-Host "No issues found!"
+          }
+
+      - name: Update Badge Timestamp in README
+        if: success() && github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $timestamp = Get-Date -UFormat %s
+          $readme = "README.md"
+          if (Test-Path $readme) {
+              $content = Get-Content $readme -Raw
+              # This regex looks for badge.svg?t= followed by any numbers and replaces it
+              $newContent = $content -replace 'badge\.svg\?t=\d*', "badge.svg?t=$timestamp"
+              $newContent | Set-Content $readme -NoNewline
+          }
+
+      - name: Commit and Push changes
+        if: success() && github.event_name == 'push'
+        shell: pwsh
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          $status = git status --porcelain
+          if ($status) {
+              git add README.md
+              # [skip ci] is vital to prevent an infinite loop of builds
+              git commit -m "Chore update badge timestamp [skip ci]"
+              git push
+          } else {
+              Write-Host "No changes to README.md"
           }
