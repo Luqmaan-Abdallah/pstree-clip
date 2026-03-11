@@ -1,7 +1,6 @@
 Add-Type -AssemblyName PresentationFramework, System.Windows.Forms
 
 $TargetDir = Join-Path $HOME "Clip-Tree"
-$TargetScriptPath = Join-Path $TargetDir "Clip-Tree.ps1"
 
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

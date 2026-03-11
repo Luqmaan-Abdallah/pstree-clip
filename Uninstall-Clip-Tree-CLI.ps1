@@ -1,5 +1,4 @@
 $TargetDir = Join-Path $HOME "Clip-Tree"
-$TargetScriptPath = Join-Path $TargetDir "Clip-Tree.ps1"
 
 $E = [char]27
 
