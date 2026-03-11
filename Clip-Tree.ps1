@@ -1,6 +1,8 @@
+# --- Module Internal State (Defaults) ---
 $Script:GetTreeDefaultStyle = 'Classic'
 $Script:GetTreeDefaultQuiet = $false
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 function Update-TreeConfig {
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -12,8 +14,10 @@ function Update-TreeConfig {
         [Alias('q')]
         [bool]$Quiet
     )
-    if ($PSBoundParameters.ContainsKey('Style')) { $Script:GetTreeDefaultStyle = $Style }
-    if ($PSBoundParameters.ContainsKey('Quiet')) { $Script:GetTreeDefaultQuiet = $Quiet }
+    if ($PSCmdlet.ShouldProcess("Module Configuration", "Update Defaults")) {
+        if ($PSBoundParameters.ContainsKey('Style')) { $Script:GetTreeDefaultStyle = $Style }
+        if ($PSBoundParameters.ContainsKey('Quiet')) { $Script:GetTreeDefaultQuiet = $Quiet }
+    }
 }
 
 function Get-Tree {
