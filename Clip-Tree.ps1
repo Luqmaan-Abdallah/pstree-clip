@@ -2,18 +2,26 @@
 $Script:GetTreeDefaultStyle = 'Classic'
 $Script:GetTreeDefaultQuiet = $false
 
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 function Update-TreeConfig {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Position = 0)]
         [Alias('s')]
+        # Using ArgumentCompleter allows tab-completion without strict enforcement
+        [ArgumentCompleter({
+            param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
+            ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
+        })]
         [string]$Style,
         
         [Parameter(Position = 1)]
         [Alias('q')]
         [bool]$Quiet
     )
+    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Only modifies internal module variables.")]
+    $null = $null
+
     if ($PSCmdlet.ShouldProcess("Module Configuration", "Update Defaults")) {
         if ($PSBoundParameters.ContainsKey('Style')) { $Script:GetTreeDefaultStyle = $Style }
         if ($PSBoundParameters.ContainsKey('Quiet')) { $Script:GetTreeDefaultQuiet = $Quiet }
@@ -25,6 +33,10 @@ function Get-Tree {
     param(
         [Parameter(Mandatory=$false, Position = 0)]
         [Alias('s')]
+        [ArgumentCompleter({
+            param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
+            ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
+        })]
         [string]$Style = $Script:GetTreeDefaultStyle,
 
         [Parameter(Mandatory=$false)]
