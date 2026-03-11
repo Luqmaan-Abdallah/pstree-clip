@@ -1,10 +1,10 @@
-## ClipTree
+## Clip-Tree
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue?logo=powershell&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
 
-**ClipTree** is a PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. It is built for developers who need to provide instant project context to LLMs or generate quick file-structure documentation without manual formatting.
+**Clip-Tree** is a PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. It is built for developers who need to provide instant project context to LLMs or generate quick file-structure documentation without manual formatting.
 
 ---
 
@@ -24,7 +24,7 @@
 Run the graphical installer to handle directory setup and profile linking automatically:
 
 ```powershell
-.\Install-ClipTree-GUI.ps1
+.\Install-Clip-Tree-GUI.ps1
 
 ```
 
@@ -33,7 +33,7 @@ Run the graphical installer to handle directory setup and profile linking automa
 For a head-less setup, use the CLI installer:
 
 ```powershell
-.\Install-ClipTree-CLI.ps1
+.\Install-Clip-Tree-CLI.ps1
 
 ```
 
@@ -49,7 +49,7 @@ Clip-Tree
 
 # Shorthand aliases
 ct
-cliptree
+clip-tree
 
 ```
 
@@ -62,9 +62,9 @@ The script will scan the current directory and notify you once the tree is ready
 To remove the tool and clean the loader from your `$PROFILE`, run the uninstaller:
 
 ```powershell
-.\Uninstall-ClipTree-GUI.ps1
+.\Uninstall-Clip-Tree-GUI.ps1
 # OR
-.\Uninstall-ClipTree-CLI.ps1
+.\Uninstall-Clip-Tree-CLI.ps1
 
 ```
 

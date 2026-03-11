@@ -37,5 +37,5 @@ function Clip-Tree {
     Write-Host "Success! Tree structure copied to clipboard." -ForegroundColor Green
 }
 
-Set-Alias -Name cliptree -Value Clip-Tree
+Set-Alias -Name clip-tree -Value Clip-Tree
 Set-Alias -Name ct -Value Clip-Tree

@@ -1,14 +1,14 @@
-$TargetDir = Join-Path $HOME "ClipTree"
-$TargetScriptPath = Join-Path $TargetDir "ClipTree.ps1"
+$TargetDir = Join-Path $HOME "Clip-Tree"
+$TargetScriptPath = Join-Path $TargetDir "Clip-Tree.ps1"
 
-Write-Host "Starting ClipTree removal sequence..." -ForegroundColor Cyan
+Write-Host "Starting Clip-Tree removal sequence..." -ForegroundColor Cyan
 
 if (Test-Path $PROFILE) {
     Write-Host "Cleaning PowerShell profile..." -ForegroundColor Gray
     
     $content = Get-Content $PROFILE -ErrorAction SilentlyContinue
     $newContent = $content | Where-Object { 
-        $_ -notlike "*ClipTree.ps1*" -and 
+        $_ -notlike "*Clip-Tree.ps1*" -and 
         $_ -notlike "*pstree-clip.ps1*" 
     }
 
@@ -33,7 +33,7 @@ if (Test-Path $TargetDir) {
 
 Write-Host "------------------------------------------------" -ForegroundColor Cyan
 Write-Host "Uninstallation complete." -ForegroundColor Green
-Write-Host "The 'Clip-Tree', 'ct', and 'cliptree' commands are now inactive." -ForegroundColor White
+Write-Host "The 'Clip-Tree', 'ct', and 'clip-tree' commands are now inactive." -ForegroundColor White
 Write-Host ""
 Write-Host "Note: Restart your terminal to clear existing aliases from memory." -ForegroundColor Yellow
 Write-Host "------------------------------------------------" -ForegroundColor Cyan
