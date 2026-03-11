@@ -54,8 +54,14 @@ function Get-Tree {
     )
 
     process {
+        $StyleKeywords = @('classic', 'modern', 'visual', 'c', 'm', 'v')
+        if (-not (Test-Path -Path $Path) -and ($StyleKeywords -contains $Path.ToLower())) {
+            $Style = $Path
+            $Path = "."
+        }
+
         try {
-            $ResolvedPath = Resolve-Path $Path -ErrorAction Stop
+            $ResolvedPath = Resolve-Path -Path $Path -ErrorAction Stop
             $RootPath = $ResolvedPath.Path
         }
         catch {
