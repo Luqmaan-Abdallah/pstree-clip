@@ -1,4 +1,4 @@
-# (c) 2026 Luqmaan Abdallah | MIT License
+﻿# (c) 2026 Luqmaan Abdallah | MIT License
 
 function Get-Tree {
 <#
@@ -65,6 +65,7 @@ function Get-Tree {
     Requires Set-Clipboard. If the clipboard is unavailable, the tree is still output to the console.
 #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
         # The target directory. 
         # Position 0: Allows 'Get-Tree C:\Windows' without typing -Path.
@@ -81,6 +82,8 @@ function Get-Tree {
         [Alias('s')]
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
+            $null = $CommandName, $ParameterName, $CommandAst, $FakeBoundParameters
+            
             ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
         })]
         [string]$Style = $Script:GetTreeDefaultStyle,

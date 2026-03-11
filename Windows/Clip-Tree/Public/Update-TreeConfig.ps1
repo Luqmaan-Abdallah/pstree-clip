@@ -41,6 +41,9 @@ function Update-TreeConfig {
         [Alias('s')]
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
+            
+            $null = $CommandName, $ParameterName, $CommandAst, $FakeBoundParameters
+            
             ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
         })]
         [string]$Style,
