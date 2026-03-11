@@ -1,8 +1,8 @@
 $Script:GetTreeDefaultStyle = 'Classic'
 $Script:GetTreeDefaultQuiet = $false
 
-function Set-TreeConfig {
-    [CmdletBinding()]
+function Update-TreeConfig {
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Position = 0)]
         [Alias('s')]
@@ -93,7 +93,6 @@ function Get-Tree {
         $finalTree | Set-Clipboard -ErrorAction Stop
         
         if (-not $Quiet) {
-            $displayStyle = switch -Wildcard ($Style) { "m*" {"Modern"}; "v*" {"Visual"}; Default {"Classic"} }
             Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
         }
     }
