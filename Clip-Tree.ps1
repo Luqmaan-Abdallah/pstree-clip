@@ -1,11 +1,35 @@
+$Script:GetTreeDefaultStyle = 'Classic'
+$Script:GetTreeDefaultQuiet = $false
+
+function Set-TreeConfig {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0)]
+        [Alias('s')]
+        [string]$Style,
+        
+        [Parameter(Position = 1)]
+        [Alias('q')]
+        [bool]$Quiet
+    )
+    if ($PSBoundParameters.ContainsKey('Style')) { $Script:GetTreeDefaultStyle = $Style }
+    if ($PSBoundParameters.ContainsKey('Quiet')) { $Script:GetTreeDefaultQuiet = $Quiet }
+}
+
 function Get-Tree {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$false)]
-        [ValidateSet('Classic', 'Modern', 'Visual')]
-        [string]$Style = $(if ($Global:GetTreeDefaultStyle) { $Global:GetTreeDefaultStyle } else { 'Classic' }),
+        [Parameter(Mandatory=$false, Position = 0)]
+        [Alias('s')]
+        [string]$Style = $Script:GetTreeDefaultStyle,
 
-        [switch]$Quiet = $(if ($Global:GetTreeDefaultQuiet) { $Global:GetTreeDefaultQuiet } else { $false })
+        [Parameter(Mandatory=$false)]
+        [Alias('q')]
+        [switch]$Quiet = $Script:GetTreeDefaultQuiet,
+
+        [Parameter(Mandatory=$false, Position = 1)]
+        [Alias('d')]
+        [int]$Depth = 0
     )
 
     $RootPath = (Resolve-Path ".").Path
@@ -18,11 +42,19 @@ function Get-Tree {
 
     $report = [System.Text.StringBuilder]::new()
 
-    $allFiles = Get-ChildItem -Path $RootPath -Recurse -Force | Where-Object {
+    $gciParams = @{
+        Path    = $RootPath
+        Recurse = $true
+        Force   = $true
+    }
+    if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
+
+    $allFiles = Get-ChildItem @gciParams | Where-Object {
         $itemPath = $_.FullName
+        $pathParts = $itemPath -split '\\'
         $shouldIgnore = $false
         foreach ($pattern in $IgnoreList) {
-            if ($itemPath -split '\\' -contains $pattern) { 
+            if ($pathParts -contains $pattern) { 
                 $shouldIgnore = $true
                 break 
             }
@@ -35,22 +67,21 @@ function Get-Tree {
         if ([string]::IsNullOrWhiteSpace($RelativePath)) { continue }
         
         $PathParts = $RelativePath -split '\\'
-        $Depth = $PathParts.Count - 1
-        $Indent = "  " * $Depth
+        $itemDepth = $PathParts.Count - 1
+        $Indent = "  " * $itemDepth
 
         $symbol = ""
-        switch ($Style) {
-            'Modern' {
+        switch -Wildcard ($Style) {
+            "m*" {
                 $symbol = if ($item.PSIsContainer) { "$([char]0x251C)$([char]0x2500) " } else { "$([char]0x2514)$([char]0x2500) " }
             }
-            'Visual' {
+            "v*" {
                 $symbol = if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " }
             }
             Default {
                 $symbol = if ($item.PSIsContainer) { "+ " } else { "- " }
             }
         }
-
         [void]$report.AppendLine("$Indent$symbol$($item.Name)")
     }
 
@@ -58,14 +89,16 @@ function Get-Tree {
     $E = [char]27
 
     try {
+        if ([string]::IsNullOrWhiteSpace($finalTree)) { throw "No files found." }
         $finalTree | Set-Clipboard -ErrorAction Stop
         
         if (-not $Quiet) {
+            $displayStyle = switch -Wildcard ($Style) { "m*" {"Modern"}; "v*" {"Visual"}; Default {"Classic"} }
             Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
         }
     }
     catch {
-        Write-Output "$E[33m$E[3mClipboard unavailable. Displaying output instead:$E[0m"
+        Write-Output "$E[33m$E[3mClipboard unavailable. Outputting to terminal:$E[0m"
         Write-Output $finalTree
     }
 }
