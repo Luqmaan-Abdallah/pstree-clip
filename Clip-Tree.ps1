@@ -4,21 +4,21 @@ $Script:GetTreeDefaultQuiet = $false
 
 function Update-TreeConfig {
     [CmdletBinding(SupportsShouldProcess)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     param(
         [Parameter(Position = 0)]
         [Alias('s')]
-        # Using ArgumentCompleter allows tab-completion without strict enforcement
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
             ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
         })]
         [string]$Style,
-        
+
         [Parameter(Position = 1)]
         [Alias('q')]
         [bool]$Quiet
     )
-    
+
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Only modifies internal module variables.")]
     $null = $null
 
@@ -30,6 +30,8 @@ function Update-TreeConfig {
 
 function Get-Tree {
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
         [Parameter(Mandatory=$false, Position = 0)]
         [Alias('s')]
@@ -70,9 +72,9 @@ function Get-Tree {
         $pathParts = $itemPath -split '\\'
         $shouldIgnore = $false
         foreach ($pattern in $IgnoreList) {
-            if ($pathParts -contains $pattern) { 
+            if ($pathParts -contains $pattern) {
                 $shouldIgnore = $true
-                break 
+                break
             }
         }
         !$shouldIgnore
@@ -81,7 +83,7 @@ function Get-Tree {
     foreach ($item in $allFiles) {
         $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
         if ([string]::IsNullOrWhiteSpace($RelativePath)) { continue }
-        
+
         $PathParts = $RelativePath -split '\\'
         $itemDepth = $PathParts.Count - 1
         $Indent = "  " * $itemDepth
@@ -104,19 +106,30 @@ function Get-Tree {
     $finalTree = $report.ToString()
     $E = [char]27
 
+    if ([string]::IsNullOrWhiteSpace($finalTree)) {
+        Write-Error "No files found."
+        return
+    }
+
+    $isRedirected = $MyInvocation.ExpectingInput -or $PSCmdlet.MyInvocation.PipelineLength -gt 1
+    if ($isRedirected -or -not $Quiet) {
+        Write-Output $finalTree
+    }
+
     try {
-        if ([string]::IsNullOrWhiteSpace($finalTree)) { throw "No files found." }
         $finalTree | Set-Clipboard -ErrorAction Stop
-        
         if (-not $Quiet) {
-            Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
+            Write-Host "$E[32m$E[3mCopied to clipboard$E[0m"
         }
     }
     catch {
-        Write-Output "$E[33m$E[3mClipboard unavailable. Outputting to terminal:$E[0m"
-        Write-Output $finalTree
+        if (-not $Quiet) {
+            Write-Host "$E[33m$E[3mClipboard unavailable.$E[0m"
+            if ($Quiet) { Write-Output $finalTree }
+        }
     }
 }
 
+Set-Alias -Name gt -Value Get-Tree -Force
 Set-Alias -Name ct -Value Get-Tree -Force
 Set-Alias -Name Clip-Tree -Value Get-Tree -Force
