@@ -3,7 +3,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue?logo=powershell&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
-[![PowerShell Security Scan](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml/badge.svg?t=1773249842)](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml)
+[![PowerShell Security Scan](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml/badge.svg?t=1773250107)](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml)
 
 **Clip-Tree** is a PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. It is built for developers who need to provide instant project context to LLMs or generate quick file-structure documentation without manual formatting.
 
