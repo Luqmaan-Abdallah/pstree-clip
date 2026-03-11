@@ -1,10 +1,12 @@
 $TargetDir = Join-Path $HOME "Clip-Tree"
 $TargetScriptPath = Join-Path $TargetDir "Clip-Tree.ps1"
 
-Write-Host "Starting Clip-Tree removal sequence..." -ForegroundColor Cyan
+$E = [char]27
+
+Write-Output "$E[36mStarting Clip-Tree removal sequence...$E[0m"
 
 if (Test-Path $PROFILE) {
-    Write-Host "Cleaning PowerShell profile..." -ForegroundColor Gray
+    Write-Output "$E[90mCleaning PowerShell profile...$E[0m"
     
     $content = Get-Content $PROFILE -ErrorAction SilentlyContinue
     $newContent = $content | Where-Object { 
@@ -13,27 +15,27 @@ if (Test-Path $PROFILE) {
     }
 
     $newContent | Set-Content $PROFILE -Force
-    Write-Host "Done: Profile references removed." -ForegroundColor Green
+    Write-Output "$E[32mDone: Profile references removed.$E[0m"
 } else {
-    Write-Host "Note: No PowerShell profile found. Skipping profile cleanup." -ForegroundColor Gray
+    Write-Output "$E[90mNote: No PowerShell profile found. Skipping profile cleanup.$E[0m"
 }
 
 if (Test-Path $TargetDir) {
-    Write-Host "Removing installation directory: $TargetDir" -ForegroundColor Gray
+    Write-Output "$E[90mRemoving installation directory: $TargetDir$E[0m"
     try {
         Remove-Item -Path $TargetDir -Recurse -Force -ErrorAction Stop
-        Write-Host "Done: Files deleted." -ForegroundColor Green
+        Write-Output "$E[32mDone: Files deleted.$E[0m"
     }
     catch {
-        Write-Host "Warning: Could not remove directory. It might be in use." -ForegroundColor Yellow
+        Write-Output "$E[33mWarning: Could not remove directory. It might be in use.$E[0m"
     }
 } else {
-    Write-Host "Note: Installation directory not found." -ForegroundColor Gray
+    Write-Output "$E[90mNote: Installation directory not found.$E[0m"
 }
 
-Write-Host "------------------------------------------------" -ForegroundColor Cyan
-Write-Host "Uninstallation complete." -ForegroundColor Green
-Write-Host "The 'Clip-Tree', 'ct', and 'clip-tree' commands are now inactive." -ForegroundColor White
-Write-Host ""
-Write-Host "Note: Restart your terminal to clear existing aliases from memory." -ForegroundColor Yellow
-Write-Host "------------------------------------------------" -ForegroundColor Cyan
+Write-Output "$E[36m------------------------------------------------$E[0m"
+Write-Output "$E[32mUninstallation complete.$E[0m"
+Write-Output "The 'Clip-Tree', 'ct', and 'clip-tree' commands are now inactive."
+Write-Output ""
+Write-Output "$E[33mNote: Restart your terminal to clear existing aliases from memory.$E[0m"
+Write-Output "$E[36m------------------------------------------------$E[0m"

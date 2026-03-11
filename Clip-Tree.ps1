@@ -34,7 +34,9 @@ function Get-Tree {
     }
 
     $report.ToString() | Set-Clipboard
-    Write-Host "Success! Tree structure copied to clipboard." -ForegroundColor Green
+    
+    $E = [char]27
+    Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
 }
 
 Set-Alias -Name Clip-Tree -Value Get-Tree
