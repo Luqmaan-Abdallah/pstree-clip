@@ -1,0 +1,25 @@
+name: PowerShell Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  ps-security:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install PSScriptAnalyzer
+        run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        run: |
+          $psFiles = Get-ChildItem -Path . -Filter *.ps1 -Recurse
+          foreach ($file in $psFiles) {
+            Invoke-ScriptAnalyzer -Path $file.FullName -Recurse -Severity Error,Warning
+          }
