@@ -1,4 +1,4 @@
-function Clip-Tree {
+function Get-Tree {
     $RootPath = (Resolve-Path ".").Path
     $IgnoreFile = Join-Path $RootPath ".treeignore"
     $IgnoreList = @(".treeignore")
@@ -37,5 +37,6 @@ function Clip-Tree {
     Write-Host "Success! Tree structure copied to clipboard." -ForegroundColor Green
 }
 
-Set-Alias -Name clip-tree -Value Clip-Tree
-Set-Alias -Name ct -Value Clip-Tree
+Set-Alias -Name Clip-Tree -Value Get-Tree
+Set-Alias -Name clip-tree -Value Get-Tree
+Set-Alias -Name ct -Value Get-Tree
