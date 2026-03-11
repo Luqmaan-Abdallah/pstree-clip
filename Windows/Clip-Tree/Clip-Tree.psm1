@@ -19,7 +19,12 @@ foreach ($import in @($Public + $Private)) {
 # This runs the Win32/ANSI setup code we moved to the Private folder.
 Initialize-Console
 
+# --- Create Aliases explicitly in the module scope ---
+Set-Alias -Name ct -Value Get-Tree -Scope Script -Description "Alias for Get-Tree"
+Set-Alias -Name gt -Value Get-Tree -Scope Script -Description "Alias for Get-Tree"
+Set-Alias -Name clip-tree -Value Get-Tree -Scope Script -Description "Alias for Get-Tree"
+
 # --- Public Interface ---
 # This is the 'Gatekeeper'. Only the items listed here are visible to the user.
 # Anything in the 'Private' folder is NOT exported, keeping the module tidy.
-Export-ModuleMember -Function Get-Tree, Update-TreeConfig -Alias gt, ct, Clip-Tree
+Export-ModuleMember -Function Get-Tree, Update-TreeConfig -Alias gt, ct, clip-tree
