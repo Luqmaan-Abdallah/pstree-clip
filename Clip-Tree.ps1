@@ -1,7 +1,17 @@
 function Get-Tree {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$false)]
+        [ValidateSet('Classic', 'Modern', 'Visual')]
+
+        [string]$Style = $(if ($Global:GetTreeDefaultStyle) { $Global:GetTreeDefaultStyle } else { 'Classic' }),
+
+        [switch]$Quiet = $(if ($Global:GetTreeDefaultQuiet) { $Global:GetTreeDefaultQuiet } else { $false })
+    )
+
     $RootPath = (Resolve-Path ".").Path
     $IgnoreFile = Join-Path $RootPath ".treeignore"
-    $IgnoreList = @(".treeignore")
+    $IgnoreList = @(".treeignore", ".git")
 
     if (Test-Path $IgnoreFile) {
         $IgnoreList += Get-Content $IgnoreFile | Where-Object { $_ -match '\S' } | ForEach-Object { $_.Trim() }
@@ -9,11 +19,11 @@ function Get-Tree {
 
     $report = [System.Text.StringBuilder]::new()
 
-    $allFiles = Get-ChildItem -Path $RootPath -Recurse | Where-Object {
+    $allFiles = Get-ChildItem -Path $RootPath -Recurse -Force | Where-Object {
         $itemPath = $_.FullName
         $shouldIgnore = $false
         foreach ($pattern in $IgnoreList) {
-            if ($itemPath -like "*$pattern*") { 
+            if ($itemPath -split '\\' -contains $pattern) { 
                 $shouldIgnore = $true
                 break 
             }
@@ -27,18 +37,31 @@ function Get-Tree {
         
         $PathParts = $RelativePath -split '\\'
         $Depth = $PathParts.Count - 1
-        
         $Indent = "  " * $Depth
-        $symbol = if ($item.PSIsContainer) { "+ " } else { "- " }
+
+        $symbol = ""
+        switch ($Style) {
+            'Modern' {
+                $symbol = if ($item.PSIsContainer) { "$([char]0x251C)$([char]0x2500) " } else { "$([char]0x2514)$([char]0x2500) " }
+            }
+            'Visual' {
+                $symbol = if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " }
+            }
+            Default {
+                $symbol = if ($item.PSIsContainer) { "+ " } else { "- " }
+            }
+        }
+
         [void]$report.AppendLine("$Indent$symbol$($item.Name)")
     }
 
     $report.ToString() | Set-Clipboard
     
-    $E = [char]27
-    Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
+    if (-not $Quiet) {
+        $E = [char]27
+        Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
+    }
 }
 
-Set-Alias -Name Clip-Tree -Value Get-Tree
-Set-Alias -Name clip-tree -Value Get-Tree
-Set-Alias -Name ct -Value Get-Tree
+Set-Alias -Name ct -Value Get-Tree -Force
+Set-Alias -Name Clip-Tree -Value Get-Tree -Force
