@@ -47,7 +47,11 @@ function Get-Tree {
 
         [Parameter(Mandatory = $false, Position = 2)]
         [Alias('d')]
-        [int]$Depth = 0
+        [int]$Depth = 0,
+
+        [Parameter(Mandatory = $false)]
+        [Alias('do')]
+        [switch]$DirectoryOnly
     )
 
     process {
@@ -83,6 +87,7 @@ function Get-Tree {
             Force   = $true
         }
         if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
+        if ($DirectoryOnly) { $gciParams['Directory'] = $true }
 
         $allFiles = Get-ChildItem @gciParams | Where-Object {
             $item = $_
@@ -127,7 +132,7 @@ function Get-Tree {
 
         if ([string]::IsNullOrWhiteSpace($finalTree)) {
             if (-not $Quiet) {
-                Write-Host "$E[33mNo files found in: $RootPath$E[0m"
+                Write-Host "$E[33mNo items found in: $RootPath$E[0m"
             }
             return
         }
