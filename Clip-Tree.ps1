@@ -33,7 +33,10 @@ function Get-Tree {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
-        [Parameter(Mandatory=$false, Position = 0)]
+        [Parameter(Position = 0, Mandatory = $false, ValueFromPipeline = $true)]
+        [string]$Path = ".",
+
+        [Parameter(Position = 1, Mandatory = $false)]
         [Alias('s')]
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
@@ -45,87 +48,96 @@ function Get-Tree {
         [Alias('q')]
         [switch]$Quiet = $Script:GetTreeDefaultQuiet,
 
-        [Parameter(Mandatory=$false, Position = 1)]
+        [Parameter(Mandatory=$false, Position = 2)]
         [Alias('d')]
         [int]$Depth = 0
     )
 
-    $RootPath = (Resolve-Path ".").Path
-    $IgnoreFile = Join-Path $RootPath ".treeignore"
-    $IgnoreList = @(".treeignore", ".git")
+    process {
+        try {
+            $ResolvedPath = Resolve-Path $Path -ErrorAction Stop
+            $RootPath = $ResolvedPath.Path
+        }
+        catch {
+            Write-Error "Could not find path: $Path"
+            return
+        }
 
-    if (Test-Path $IgnoreFile) {
-        $IgnoreList += Get-Content $IgnoreFile | Where-Object { $_ -match '\S' } | ForEach-Object { $_.Trim() }
-    }
+        $IgnoreFile = Join-Path $RootPath ".treeignore"
+        $IgnoreList = @(".treeignore", ".git")
 
-    $report = [System.Text.StringBuilder]::new()
+        if (Test-Path $IgnoreFile) {
+            $IgnoreList += Get-Content $IgnoreFile | Where-Object { $_ -match '\S' } | ForEach-Object { $_.Trim() }
+        }
 
-    $gciParams = @{
-        Path    = $RootPath
-        Recurse = $true
-        Force   = $true
-    }
-    if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
+        $report = [System.Text.StringBuilder]::new()
 
-    $allFiles = Get-ChildItem @gciParams | Where-Object {
-        $itemPath = $_.FullName
-        $pathParts = $itemPath -split '\\'
-        $shouldIgnore = $false
-        foreach ($pattern in $IgnoreList) {
-            if ($pathParts -contains $pattern) {
-                $shouldIgnore = $true
-                break
+        $gciParams = @{
+            Path    = $RootPath
+            Recurse = $true
+            Force   = $true
+        }
+        if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
+
+        $allFiles = Get-ChildItem @gciParams | Where-Object {
+            $itemPath = $_.FullName
+            $pathParts = $itemPath -split '\\'
+            $shouldIgnore = $false
+            foreach ($pattern in $IgnoreList) {
+                if ($pathParts -contains $pattern) {
+                    $shouldIgnore = $true
+                    break
+                }
+            }
+            !$shouldIgnore
+        } | Sort-Object FullName
+
+        foreach ($item in $allFiles) {
+            $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
+            if ([string]::IsNullOrWhiteSpace($RelativePath)) { continue }
+
+            $PathParts = $RelativePath -split '\\'
+            $itemDepth = $PathParts.Count - 1
+            $Indent = "  " * $itemDepth
+
+            $symbol = ""
+            switch -Wildcard ($Style) {
+                "m*" {
+                    $symbol = if ($item.PSIsContainer) { "$([char]0x251C)$([char]0x2500) " } else { "$([char]0x2514)$([char]0x2500) " }
+                }
+                "v*" {
+                    $symbol = if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " }
+                }
+                Default {
+                    $symbol = if ($item.PSIsContainer) { "+ " } else { "- " }
+                }
+            }
+            [void]$report.AppendLine("$Indent$symbol$($item.Name)")
+        }
+
+        $finalTree = $report.ToString()
+        $E = [char]27
+
+        if ([string]::IsNullOrWhiteSpace($finalTree)) {
+            if (-not $Quiet) { Write-Host "$E[33mNo files found in: $RootPath$E[0m" }
+            return
+        }
+
+        $isRedirected = $MyInvocation.ExpectingInput -or $PSCmdlet.MyInvocation.PipelineLength -gt 1
+        if ($isRedirected -or -not $Quiet) {
+            Write-Output $finalTree
+        }
+
+        try {
+            $finalTree | Set-Clipboard -ErrorAction Stop
+            if (-not $Quiet) {
+                Write-Host "$E[32m$E[3mCopied to clipboard$E[0m"
             }
         }
-        !$shouldIgnore
-    } | Sort-Object FullName
-
-    foreach ($item in $allFiles) {
-        $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
-        if ([string]::IsNullOrWhiteSpace($RelativePath)) { continue }
-
-        $PathParts = $RelativePath -split '\\'
-        $itemDepth = $PathParts.Count - 1
-        $Indent = "  " * $itemDepth
-
-        $symbol = ""
-        switch -Wildcard ($Style) {
-            "m*" {
-                $symbol = if ($item.PSIsContainer) { "$([char]0x251C)$([char]0x2500) " } else { "$([char]0x2514)$([char]0x2500) " }
+        catch {
+            if (-not $Quiet) {
+                Write-Host "$E[33m$E[3mClipboard unavailable.$E[0m"
             }
-            "v*" {
-                $symbol = if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " }
-            }
-            Default {
-                $symbol = if ($item.PSIsContainer) { "+ " } else { "- " }
-            }
-        }
-        [void]$report.AppendLine("$Indent$symbol$($item.Name)")
-    }
-
-    $finalTree = $report.ToString()
-    $E = [char]27
-
-    if ([string]::IsNullOrWhiteSpace($finalTree)) {
-        Write-Error "No files found."
-        return
-    }
-
-    $isRedirected = $MyInvocation.ExpectingInput -or $PSCmdlet.MyInvocation.PipelineLength -gt 1
-    if ($isRedirected -or -not $Quiet) {
-        Write-Output $finalTree
-    }
-
-    try {
-        $finalTree | Set-Clipboard -ErrorAction Stop
-        if (-not $Quiet) {
-            Write-Host "$E[32m$E[3mCopied to clipboard$E[0m"
-        }
-    }
-    catch {
-        if (-not $Quiet) {
-            Write-Host "$E[33m$E[3mClipboard unavailable.$E[0m"
-            if ($Quiet) { Write-Output $finalTree }
         }
     }
 }
