@@ -54,6 +54,29 @@ function Get-Tree {
         [switch]$DirectoryOnly
     )
 
+    begin {
+        if ($Host.Name -eq 'ConsoleHost' -and $PSVersionTable.PSVersion.Major -le 5) {
+            $Signature = @'
+[DllImport("kernel32.dll", SetLastError = true)]
+public static extern IntPtr GetStdHandle(int nStdHandle);
+[DllImport("kernel32.dll", SetLastError = true)]
+public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+[DllImport("kernel32.dll", SetLastError = true)]
+public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+'@
+
+            [void](Add-Type -MemberDefinition $Signature -Name "Win32Utils" -Namespace "TreeUtils" -PassThru -ErrorAction SilentlyContinue)
+            $type = [TreeUtils.Win32Utils]
+            if ($type) {
+                $handle = $type::GetStdHandle(-11)
+                $mode = 0
+                if ($type::GetConsoleMode($handle, [ref]$mode)) {
+                    [void]$type::SetConsoleMode($handle, $mode -bor 0x0004)
+                }
+            }
+        }
+    }
+
     process {
         $StyleKeywords = @('classic', 'modern', 'visual', 'c', 'm', 'v')
         if (-not (Test-Path -Path $Path) -and ($StyleKeywords -contains $Path.ToLower())) {
