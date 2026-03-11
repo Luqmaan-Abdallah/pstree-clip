@@ -3,7 +3,6 @@ function Get-Tree {
     param(
         [Parameter(Mandatory=$false)]
         [ValidateSet('Classic', 'Modern', 'Visual')]
-
         [string]$Style = $(if ($Global:GetTreeDefaultStyle) { $Global:GetTreeDefaultStyle } else { 'Classic' }),
 
         [switch]$Quiet = $(if ($Global:GetTreeDefaultQuiet) { $Global:GetTreeDefaultQuiet } else { $false })
@@ -55,11 +54,19 @@ function Get-Tree {
         [void]$report.AppendLine("$Indent$symbol$($item.Name)")
     }
 
-    $report.ToString() | Set-Clipboard
-    
-    if (-not $Quiet) {
-        $E = [char]27
-        Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
+    $finalTree = $report.ToString()
+    $E = [char]27
+
+    try {
+        $finalTree | Set-Clipboard -ErrorAction Stop
+        
+        if (-not $Quiet) {
+            Write-Output "$E[32m$E[3mCopied to clipboard$E[0m"
+        }
+    }
+    catch {
+        Write-Output "$E[33m$E[3mClipboard unavailable. Displaying output instead:$E[0m"
+        Write-Output $finalTree
     }
 }
 
