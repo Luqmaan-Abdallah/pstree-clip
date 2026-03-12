@@ -76,11 +76,11 @@ jobs:
           
           # 2. Keep README and LICENSE at the root for GitHub display
           # 3. Keep the Clip-Tree folder for PowerShell compatibility
-          # We move the folder out of "Windows/"
-          cp -r Windows/Clip-Tree .
+          # We move the folder out of "PSGallery/"
+          cp -r PSGallery/Clip-Tree .
           
           # 4. Remove the original dev folders
-          rm -rf Windows .github
+          rm -rf PSGallery .github
           
           # 5. Commit and Force Push
           git add .
