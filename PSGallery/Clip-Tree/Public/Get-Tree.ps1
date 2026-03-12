@@ -6,7 +6,7 @@ function Get-Tree {
     Generates a directory tree structure and copies it to the clipboard.
 
 .DESCRIPTION
-    Get-Tree scans a directory and creates a visual representation (Classic, Modern, or Visual). 
+    Get-Tree scans a directory and creates a visual representation (Classic, Modern, or Visual).
     The output is automatically copied to the clipboard for easy pasting into documentation or chat.
 
 .PARAMETER Path
@@ -67,7 +67,7 @@ function Get-Tree {
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
     param(
-        # The target directory. 
+        # The target directory.
         # Position 0: Allows 'Get-Tree C:\Windows' without typing -Path.
         # ValueFromPipeline: Allows '"C:\Path1", "C:\Path2" | Get-Tree'.
         [Parameter(Position = 0, Mandatory = $false, ValueFromPipeline = $true)]
@@ -83,10 +83,10 @@ function Get-Tree {
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
             $null = $CommandName, $ParameterName, $CommandAst, $FakeBoundParameters
-            
+
             ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
         })]
-        [string]$Style = $Script:GetTreeDefaultStyle,
+        [string]$Style = $(if ($Script:GetTreeDefaultStyle) { $Script:GetTreeDefaultStyle } else { "Modern" }),
 
         # Suppresses status messages (e.g., "Copied to clipboard").
         # [switch]: A boolean toggle. Used as '-Quiet' (True) or omitted (False).
@@ -126,7 +126,7 @@ function Get-Tree {
             # into absolute filesystem paths. -ErrorAction Stop triggers the catch block if it fails.
             $ResolvedPath = Resolve-Path -Path $Path -ErrorAction Stop
 
-            # We use .Path to ensure we have the string literal path, 
+            # We use .Path to ensure we have the string literal path,
             # avoiding issues with provider-prefixed paths (like 'Microsoft.PowerShell.Core\FileSystem::C:\...')
             $RootPath = $ResolvedPath.Path
         }
@@ -137,11 +137,11 @@ function Get-Tree {
         }
 
         # .treeignore Logic
-        
+
         # 1. Define the location of the .treeignore file relative to the root being scanned.
         $IgnoreFile = Join-Path $RootPath ".treeignore"
 
-        # 2. Initialize the list with "Hardcoded" ignores. 
+        # 2. Initialize the list with "Hardcoded" ignores.
         # You always want to hide the tool's own config and the heavy .git folder.
         $IgnoreList = @(".treeignore", ".git")
 
@@ -156,123 +156,80 @@ function Get-Tree {
         }
 
         # Define the core parameters for the file system scan
-        $gciParams = @{
-            Path    = $RootPath # The starting point we resolved earlier
-            Recurse = $true # Go into subdirectories
-            Force   = $true # Include hidden and system files (like .env or .gitignore)
-        }
-        # Check if the user specifically provided a 'Depth' argument.
-        # We also ensure it's greater than 0, as Get-ChildItem -Depth 0 
-        # would only show the root files.
-        if ($PSBoundParameters.ContainsKey('Depth') -and $Depth -gt 0) { $gciParams['Depth'] = $Depth }
+        function Invoke-TreeRecursive {
+            param(
+                [string]$CurrentPath,
+                [int]$CurrentDepth,
+                [string]$Prefix,
+                [int]$MaxDepth,
+                [bool]$OnlyDirs
+            )
 
-        # If the -DirectoryOnly switch was used, we add 'Directory' to our splat.
-        # This tells Get-ChildItem to stop looking for files entirely, 
-        # making the scan much faster.
-        if ($DirectoryOnly) { $gciParams['Directory'] = $true }
+            if ($MaxDepth -gt 0 -and $CurrentDepth -ge $MaxDepth) { return }
 
-        $allFiles = Get-ChildItem @gciParams | Where-Object {
-            $item = $_
+            $gciParams = @{ Path = $CurrentPath; Force = $true }
+            if ($OnlyDirs) { $gciParams['Directory'] = $true }
 
-            # 1. Calculate the Relative Path
-            # If Root is 'C:\Projects' and Item is 'C:\Projects\Node\index.js', 
-            # this produces 'Node\index.js'
-            $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
+            $Items = Get-ChildItem @gciParams | Where-Object {
+                $item = $_
+                $shouldIgnore = $false
+                foreach ($pattern in $IgnoreList) {
+                    if ($item.Name -like $pattern) { $shouldIgnore = $true; break }
+                }
+                !$shouldIgnore
+            } | Sort-Object PSIsContainer, Name -Descending
 
-            # 2. Break the path into individual folder names
-            # 'Node\index.js' becomes @('Node', 'index.js')
-            $pathParts = $RelativePath -split '\\'
-            
-            $shouldIgnore = $false
+            $Count = $Items.Count
+            for ($i = 0; $i -lt $Count; $i++) {
+                $item = $Items[$i]
+                $isLast = ($i -eq $Count - 1)
 
-            # 3. Check every pattern in your .treeignore list
-            foreach ($pattern in $IgnoreList) {
-                # Logic: Ignore if the filename matches the pattern (e.g., 'temp.log')
-                # OR if any parent folder in the path matches the pattern (e.g., 'node_modules')
-                if ($item.Name -like $pattern -or ($pathParts -contains $pattern)) {
-                    $shouldIgnore = $true
-                    break # Stop checking other patterns once we find a match
+                $c_mid = "$([char]0x251C)$([char]0x2500) " # ├─
+                $c_end = "$([char]0x2514)$([char]0x2500) " # └─
+
+                $symbol = switch -Wildcard ($Style) {
+                    "m*" { if ($isLast) { $c_end } else { $c_mid } }
+                    "v*" { if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " } }
+                    Default { if ($item.PSIsContainer) { "+ " } else { "- " } }
+                }
+
+                [void]$script:report.AppendLine("$Prefix$symbol$($item.Name)")
+
+                if ($item.PSIsContainer) {
+                    $indentChar = if ($Style -like "m*") { if ($isLast) { "    " } else { "$([char]0x2502)   " } }
+                                  else { "  " }
+
+                    $newPrefix = $Prefix + $indentChar
+                    Invoke-TreeRecursive -CurrentPath $item.FullName -CurrentDepth ($CurrentDepth + 1) -Prefix $newPrefix -MaxDepth $MaxDepth -OnlyDirs $OnlyDirs
                 }
             }
-
-            # 4. Return the inverse (If shouldIgnore is false, keep the file)
-            !$shouldIgnore
-        } | Sort-Object FullName # Ensures the tree is alphabetical for a clean look
-
-        # String Building
-
-        # 1. Initialize a StringBuilder for high-performance string concatenation.
-        $report = [System.Text.StringBuilder]::new()
-        foreach ($item in $allFiles) {
-            # 2. Get the path relative to the scan root to determine indentation.
-            $RelativePath = $item.FullName.Substring($RootPath.Length).TrimStart('\')
-
-            # Skip the root folder itself if it somehow ended up in the list.
-            if ([string]::IsNullOrWhiteSpace($RelativePath)) { continue }
-
-            # 3. Calculate how deep the file is.
-            # 'folder\subfolder\file.txt' split by '\' has a count of 3. 
-            # Depth is count - 1 (index starting at 0).
-            $itemDepth = ($RelativePath -split '\\').Count - 1
-
-            # 4. Create the indentation string (2 spaces per depth level).
-            $Indent = "  " * $itemDepth
-
-            # 5. Choose the prefix symbol based on the chosen Style.
-            # Using -Wildcard ($Style) allows 'm', 'mod', or 'modern' to all match "m*".
-            $symbol = switch -Wildcard ($Style) {
-                # Modern: Uses Unicode box-drawing characters
-                "m*" { if ($item.PSIsContainer) { "$([char]0x251C)$([char]0x2500) " } else { "$([char]0x2514)$([char]0x2500) " } }
-
-                # Visual: Uses Folder (0xDCC1) and File (0xDCC4) emojis
-                "v*" { if ($item.PSIsContainer) { "$([char]0xD83D)$([char]0xDCC1) " } else { "$([char]0xD83D)$([char]0xDCC4) " } }
-
-                # Classic: The default fallback using + and -
-                Default { if ($item.PSIsContainer) { "+ " } else { "- " } }
-            }
-
-            # 6. Assemble the line and append it to our report.
-            # [void] suppresses the output of the AppendLine method itself.
-            [void]$report.AppendLine("$Indent$symbol$($item.Name)")
         }
 
-        # Finalization
+        # Build the String
+        $script:report = [System.Text.StringBuilder]::new()
 
-        # 1. Finalize the StringBuilder into a single string.
-        $finalTree = $report.ToString()
+        # Pass the parameters into the recursive function
+        Invoke-TreeRecursive -CurrentPath $RootPath -CurrentDepth 0 -Prefix "" -MaxDepth $Depth -OnlyDirs $DirectoryOnly.IsPresent
 
-        # 2. Define the 'Escape' character for ANSI colors.
-        # [char]27 is the ASCII escape code (ESC), used for terminal formatting.
+        $finalTree = $script:report.ToString()
         $E = [char]27
 
-        # 3. Handle the "Empty Result" edge case.
         if ([string]::IsNullOrWhiteSpace($finalTree)) {
-            # Only complain if the user didn't ask us to be quiet.
-            # $E[33m sets the text to Yellow. $E[0m resets it.
             if (-not $Quiet) { Write-Host "$E[33mNo items found in: $RootPath$E[0m" }
             return
         }
 
-        # We output the tree to the pipeline if:
-        # - The command is receiving/sending data via pipes (| or >)
-        # - OR the user has NOT enabled -Quiet.
         if ($MyInvocation.ExpectingInput -or $PSCmdlet.MyInvocation.PipelineLength -gt 1 -or -not $Quiet) {
             Write-Output $finalTree
         }
 
         try {
-            # 1. Attempt to send the string to the system clipboard.
-            # -ErrorAction Stop is vital here; it forces PowerShell to jump 
-            # to the 'catch' block if the clipboard service is missing or locked.
             $finalTree | Set-Clipboard -ErrorAction Stop
-
-            # 2. Provide visual confirmation in Green ($E[32m) and Italics ($E[3m).
-            if (-not $Quiet) { Write-Host "$E[32m$E[3mCopied to clipboard$E[0m" }
+            if (-not $Quiet) {
+                Write-Host "${E}[32m${E}[3mCopied to clipboard${E}[0m"
+            }
         }
         catch {
-            # 3. Fallback logic. 
-            # If Set-Clipboard fails (e.g., in a headless environment),
-            # we notify the user in Yellow ($E[33m) rather than crashing.
             if (-not $Quiet) { Write-Host "$E[33m$E[3mClipboard unavailable.$E[0m" }
         }
     }

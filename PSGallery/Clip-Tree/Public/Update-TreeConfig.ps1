@@ -4,16 +4,16 @@ function Update-TreeConfig {
     Updates the default settings for the Clip-Tree session.
 
 .DESCRIPTION
-    Modifies the internal module state for the current PowerShell session. 
-    This allows you to change the default tree style or silence status messages 
+    Modifies the internal module state for the current PowerShell session.
+    This allows you to change the default tree style or silence status messages
     without passing parameters to every 'Get-Tree' call.
 
 .PARAMETER Style
-    Sets the default visual style for the tree. 
+    Sets the default visual style for the tree.
     Options: 'Classic' (Default), 'Modern' (Unicode), or 'Visual' (Emoji).
 
 .PARAMETER Quiet
-    Sets the default 'Quiet' preference. 
+    Sets the default 'Quiet' preference.
     If $true, status messages like "Copied to clipboard" are suppressed by default.
 
 .EXAMPLE
@@ -41,9 +41,9 @@ function Update-TreeConfig {
         [Alias('s')]
         [ArgumentCompleter({
             param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
-            
+
             $null = $CommandName, $ParameterName, $CommandAst, $FakeBoundParameters
-            
+
             ('Classic', 'Modern', 'Visual') | Where-Object { $_ -like "$WordToComplete*" }
         })]
         [string]$Style,
@@ -56,13 +56,13 @@ function Update-TreeConfig {
     # SupportsShouldProcess allows the user to use -WhatIf or -Confirm
     if ($PSCmdlet.ShouldProcess("Module Configuration", "Update Defaults")) {
         # We target the $Script: scope so these variables persist in the module's memory
-        if ($PSBoundParameters.ContainsKey('Style')) { 
-            $Script:GetTreeDefaultStyle = $Style 
+        if ($PSBoundParameters.ContainsKey('Style')) {
+            $Script:GetTreeDefaultStyle = $Style
             Write-Verbose "Default Style updated to: $Style"
         }
-        
-        if ($PSBoundParameters.ContainsKey('Quiet')) { 
-            $Script:GetTreeDefaultQuiet = $Quiet 
+
+        if ($PSBoundParameters.ContainsKey('Quiet')) {
+            $Script:GetTreeDefaultQuiet = $Quiet
             Write-Verbose "Default Quiet mode updated to: $Quiet"
         }
     }
