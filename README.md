@@ -69,7 +69,7 @@ You can customize the default behavior of Clip-Tree so you don't have to pass pa
 Available styles: `Classic` (+/-), `Modern` (├─), `Visual` (folder icons), or `None`.
 
 ```powershell
-Update-TreeConfig -DefaultStyle Modern
+Update-TreeConfig -Style Modern
 ```
 
 ### Toggle Quiet Mode
@@ -77,7 +77,7 @@ Update-TreeConfig -DefaultStyle Modern
 To suppress the "Copied to clipboard" notification:
 
 ```powershell
-Update-TreeConfig -DefaultQuiet $true
+Update-TreeConfig -Quiet $true
 ```
 
 ---
