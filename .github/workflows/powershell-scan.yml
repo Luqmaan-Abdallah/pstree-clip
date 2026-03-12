@@ -71,13 +71,13 @@ jobs:
           # 1. Create a temporary orphan branch
           git checkout --orphan temp-production
           
-          # 2. Extract module from the Windows folder to the root
-          cp -r Windows/Clip-Tree .
+          # 2. Extract module from the PSGallery folder (Changed from Windows)
+          cp -r PSGallery/Clip-Tree .
           
-          # 3. Cleanup: Remove dev folders and keep only what's needed for the Gallery
-          rm -rf Windows .github .gitignore
+          # 3. Cleanup: Remove dev folders/files so only the module remains at root
+          rm -rf PSGallery .github .gitignore LICENSE README.md
           
-          # 4. Commit using the extracted version from the previous step
+          # 4. Commit and Push
           git add .
           git commit -m "Production release: ${{ env.RELEASE_VERSION }} [skip ci]"
           git push origin temp-production:production-psgallery --force
