@@ -16,7 +16,7 @@ foreach ($import in @($Public + $Private)) {
 }
 
 # --- Initialization ---
-# This runs the Win32/ANSI setup code we moved to the Private folder.
+# This runs the Win32/ANSI setup code in the Private folder.
 Initialize-Console
 
 # --- Create Aliases explicitly in the module scope ---
