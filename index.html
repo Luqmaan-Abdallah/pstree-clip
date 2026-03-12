@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Clip-Tree by Luqmaan Abdallah | Project Structure to Clipboard</title>
+    <title>Clip-Tree | Project Structure to Clipboard</title>
     <meta name="title" content="Clip-Tree | Project Structure to Clipboard">
     <meta name="description"
-        content="A lightweight PowerShell utility by Luqmaan Abdallah to map your project directory into a clean ASCII tree. Perfect for providing context to ChatGPT, Claude, and technical documentation.">
+        content="A high-speed PowerShell utility to map your project directory into a clean ASCII tree. Optimized for providing context to ChatGPT, Claude, and technical documentation.">
     <meta name="keywords"
-        content="Luqmaan Abdallah, PowerShell, Directory Tree, LLM Context, ChatGPT Tool, Developer Utility, Project Mapping, ASCII Tree, CLI">
+        content="PowerShell, Directory Tree, LLM Context, ChatGPT Tool, Developer Utility, Project Mapping, ASCII Tree, CLI, PSGallery">
     <meta name="author" content="Luqmaan Abdallah">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://luqmaan-abdallah.github.io/clip-tree/">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://luqmaan-abdallah.github.io/clip-tree/">
-    <meta property="og:title" content="Clip-Tree by Luqmaan Abdallah">
+    <meta property="og:title" content="Clip-Tree | Project Structure to Clipboard">
     <meta property="og:description"
-        content="Map your project structure to your clipboard in seconds. Optimized for LLM prompts.">
+        content="Map your project structure to your clipboard in seconds. One-line install via PSGallery.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,15 +32,16 @@
         <header>
             <h1>Clip-Tree</h1>
             <div class="tagline">
-                A powershell utility to map project structures and pipe the output to your clipboard.
+                A high-speed PowerShell utility to map project structures and pipe the output to your clipboard.
                 Built for technical documentation and keeping LLM prompts contextually accurate.
             </div>
             <div class="author-label">DEVELOPED BY LUQMAAN ABDALLAH</div>
         </header>
 
         <div class="actions">
-            <a href="https://github.com/Luqmaan-Abdallah/clip-tree/archive/refs/heads/main.zip" class="btn-zip">Download
-                Repo</a>
+            <a target="_blank" href="https://www.powershellgallery.com/packages/Clip-Tree" class="btn-zip">
+                View on PSGallery
+            </a>
             <a target="_blank" href="https://github.com/Luqmaan-Abdallah/clip-tree" class="btn-gh">
                 <span>View on GitHub</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -54,9 +55,16 @@
         </div>
 
         <div class="terminal-wrap">
+            <div class="terminal-header">INSTALLATION</div>
+            <div class="terminal-body">
+                <code class="prompt">PS > Install-Module -Name Clip-Tree -Scope CurrentUser</code>
+            </div>
+        </div>
+
+        <div class="terminal-wrap">
             <div class="terminal-header">POWERSHELL</div>
             <div class="terminal-body">
-                <code class="prompt">PS D:\Projects\Web-App> Clip-Tree</code>
+                <code class="prompt">PS D:\Projects\Web-App> ct</code>
 
                 <div class="clipboard-indicator">CLIPBOARD CONTENT:</div>
                 <code class="terminal-output">
@@ -81,20 +89,19 @@
 
         <div class="details">
             <div class="box">
-                <h3>Native Integration</h3>
-                <p>Built to live in your PowerShell profile. Access it instantly
-                    with <code>Clip-Tree</code>, <code>ct</code> or <code>clip-tree</code> from any directory on your
-                    system.</p>
+                <h3>Global Shorthand</h3>
+                <p>Designed for speed. Use <code>ct</code> or <code>gt</code> from any directory to instantly copy your
+                    project structure without leaving your terminal.</p>
             </div>
             <div class="box">
-                <h3>Simple Setup</h3>
-                <p>Includes dedicated GUI and CLI installers to automate folder setup and PowerShell profile linking in
-                    seconds.</p>
+                <h3>Flexible Styles</h3>
+                <p>Switch between <code>Classic</code>, <code>Modern</code>, or <code>Visual</code> styles to fit your
+                    documentation needs or AI prompt requirements.</p>
             </div>
         </div>
 
         <footer>
-            <span>© <span id="year"></span> CLIP-TREE &bull; DEVELOPED BY
+            <span>&copy; <span id="year"></span> CLIP-TREE &bull; DEVELOPED BY
                 <a href="https://github.com/Luqmaan-Abdallah" class="author-name-link">LUQMAAN ABDALLAH</a>
             </span>
             <span>
