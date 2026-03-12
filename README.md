@@ -1,74 +1,100 @@
-## Clip-Tree
+# Clip-Tree
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![PowerShell](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue?logo=powershell&logoColor=white)
-![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
-[![PowerShell Security Scan](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml/badge.svg?t=1773274044)](https://github.com/Luqmaan-Abdallah/clip-tree/actions/workflows/powershell-scan.yml)
+<p align="left">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+  <img src="https://img.shields.io/powershellgallery/v/Clip-Tree.svg" alt="PowerShell Gallery Version" />
+  <img src="https://img.shields.io/powershellgallery/dt/Clip-Tree.svg" alt="PowerShell Gallery Downloads" />
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white" alt="Platform: Windows" />
+</p>
 
-**Clip-Tree** is a PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. It is built for developers who need to provide instant project context to LLMs or generate quick file-structure documentation without manual formatting.
+**Clip-Tree** is a high-speed PowerShell utility designed to capture directory structures as clean, text-based trees and pipe them directly to your clipboard. 
 
----
-
-## Features
-
-* **Recursive Mapping:** Generates a visual tree of the current directory.
-* **Auto-Clipboard:** No file output management needed; the tree is copied to your clipboard instantly.
-* **LLM Optimized:** Produces a clean indentation style that is easily parsed by Claude, GPT, and other models.
-* **Global Access:** Once installed, the command is available from any terminal session via your PowerShell profile.
+It is specifically built for developers who need to provide instant project context to Large Language Models (LLMs) like ChatGPT and Claude, or generate file-structure documentation without manual formatting.
 
 ---
 
 ## Installation
 
-### GUI Method (Recommended)
-
-Run the graphical installer to handle directory setup and profile linking automatically:
+The most efficient way to install Clip-Tree is directly from the PowerShell Gallery.
 
 ```powershell
-.\Install-Clip-Tree-GUI.ps1
-
+Install-Module -Name Clip-Tree -Scope CurrentUser
 ```
 
-### CLI Method
+---
 
-For a head-less setup, use the CLI installer:
+## Features
 
-```powershell
-.\Install-Clip-Tree-CLI.ps1
-
-```
+* **Instant Recursive Mapping:** Quickly generates a visual representation of any directory depth.
+* **Automatic Clipboard Integration:** Copies the generated tree to your clipboard immediately upon execution.
+* **LLM Optimization:** Uses a clean indentation style that is highly readable for AI models and documentation.
+* **Multiple Visual Styles:** Supports different branch characters to suit your documentation needs.
 
 ---
 
 ## Usage
 
-Once the installation is complete, restart your terminal. You can use the primary command or the shorthand aliases:
+Once installed, the module provides a primary command and several shorthand aliases for speed.
 
 ```powershell
-# Primary command
-Clip-Tree
-
-# Shorthand aliases
+# Use the default shorthand alias
 ct
-clip-tree
+
+# Use the full cmdlet name
+Get-Tree
+
+# Target a specific path and style
+ct -Path ./src -Style Modern
 
 ```
 
-The script will scan the current directory and notify you once the tree is ready in your clipboard.
+### Command Reference
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `Get-Tree` | Function | The primary command to generate and copy the tree structure. |
+| `ct` | Alias | Shorthand for Get-Tree. |
+| `gt` | Alias | Shorthand for Get-Tree. |
+| `clip-tree` | Alias | Shorthall for Get-Tree. |
+| `Update-TreeConfig` | Function | Sets and saves your default style preferences. |
+
+---
+
+## Configuration
+
+You can customize the default behavior of Clip-Tree so you don't have to pass parameters every time.
+
+### Change Default Style
+
+Available styles: `Classic` (+/-), `Modern` (├─), `Visual` (folder icons), or `None`.
+
+```powershell
+Update-TreeConfig -DefaultStyle Modern
+```
+
+### Toggle Quiet Mode
+
+To suppress the "Copied to clipboard" notification:
+
+```powershell
+Update-TreeConfig -DefaultQuiet $true
+```
 
 ---
 
 ## Uninstallation
 
-To remove the tool and clean the loader from your `$PROFILE`, run the uninstaller:
+To completely remove the module from your system:
 
 ```powershell
-.\Uninstall-Clip-Tree-GUI.ps1
-# OR
-.\Uninstall-Clip-Tree-CLI.ps1
-
+Uninstall-Module -Name Clip-Tree
 ```
 
 ---
 
-**Repo:** [https://github.com/Luqmaan-Abdallah/clip-tree](https://github.com/Luqmaan-Abdallah/clip-tree)
+## Repository
+
+[https://github.com/Luqmaan-Abdallah/clip-tree](https://github.com/Luqmaan-Abdallah/clip-tree)
+
+## PSGallery
+[https://www.powershellgallery.com/packages/Clip-Tree](https://www.powershellgallery.com/packages/Clip-Tree/1.0.1)

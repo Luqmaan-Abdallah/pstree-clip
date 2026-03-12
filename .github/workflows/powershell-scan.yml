@@ -32,27 +32,6 @@ jobs:
               exit 1
           }
 
-      - name: Update Badge Timestamp
-        if: success() && github.event_name == 'push'
-        shell: pwsh
-        run: |
-          $timestamp = Get-Date -UFormat %s
-          if (Test-Path "README.md") {
-              (Get-Content "README.md" -Raw) -replace 'badge\.svg\?t=\d*', "badge.svg?t=$timestamp" | Set-Content "README.md" -NoNewline
-          }
-
-      - name: Commit Badge Changes
-        if: success() && github.event_name == 'push'
-        shell: pwsh
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          if (git status --porcelain) {
-              git add README.md
-              git commit -m "chore: update badge timestamp [skip ci]"
-              git push
-          }
-
   deploy:
     needs: ps-security
     if: success() && github.event_name == 'push' && contains(github.event.head_commit.message, 'release to psgallery')
@@ -74,15 +53,13 @@ jobs:
           # 1. Create a temporary orphan branch
           git checkout --orphan temp-production
           
-          # 2. Keep README and LICENSE at the root for GitHub display
-          # 3. Keep the Clip-Tree folder for PowerShell compatibility
-          # We move the folder out of "PSGallery/"
-          cp -r PSGallery/Clip-Tree .
+          # 2. Extract module from the Windows folder to the root
+          cp -r Windows/Clip-Tree .
           
-          # 4. Remove the original dev folders
-          rm -rf PSGallery .github
+          # 3. Cleanup: Remove dev folders and keep only what's needed for the Gallery
+          rm -rf Windows .github .gitignore
           
-          # 5. Commit and Force Push
+          # 4. Commit and Force Push to the production branch
           git add .
           git commit -m "Production release: $(date +'%Y-%m-%d') [skip ci]"
           git push origin temp-production:production-psgallery --force
@@ -90,5 +67,5 @@ jobs:
       - name: Publish to PowerShell Gallery
         shell: pwsh
         run: |
-          # We point specifically to the folder containing the .psd1
+          # Publish using the flattened structure
           Publish-Module -Path ./Clip-Tree -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -Verbose
